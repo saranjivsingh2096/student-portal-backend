@@ -1,0 +1,43 @@
+{
+  "name": "student-portal-backend",
+  "version": "1.0.0",
+  "main": "app.js",
+  "description": "Backend application built using Express.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "postinstall": "npm list pg pg-hstore",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "prettify": "prettier --write ."
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "backend",
+    "student portal",
+    "api",
+    "sequelize"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "razorpay": "^2.9.5",
+    "sequelize": "^6.37.5",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.21.0",
+    "jest": "^27.4.5",
+    "nodemon": "^2.0.20",
+    "prettier": "^2.5.1"
+  }
+}
