@@ -1,5 +1,6 @@
-import pg from 'pg';
+const pg = require("pg");
 const { Sequelize } = require("sequelize");
+require("dotenv").config();
 
 const sequelize = new Sequelize(process.env.DB_URL, {
   dialect: "postgres",
@@ -8,8 +9,8 @@ const sequelize = new Sequelize(process.env.DB_URL, {
   dialectOptions: {
     ssl: {
       require: true,
-      rejectUnauthorized: false 
-    }
+      rejectUnauthorized: false,
+    },
   },
 });
 
@@ -28,14 +29,21 @@ const TransactionLogData = require("./TransactionLogData")(
   Sequelize.DataTypes
 );
 
+const InternalMarks = require("./InternalMarks")(
+  sequelize,
+  Sequelize.DataTypes
+);
+
 User.hasOne(AttendanceData);
 User.hasOne(StudentProfile);
 User.hasOne(FeeDetails);
 User.hasOne(TransactionLogData);
+User.hasOne(InternalMarks);
 AttendanceData.belongsTo(User);
 StudentProfile.belongsTo(User);
 FeeDetails.belongsTo(User);
 TransactionLogData.belongsTo(User);
+InternalMarks.belongsTo(User);
 
 sequelize
   .sync()
@@ -53,4 +61,5 @@ module.exports = {
   StudentProfile,
   FeeDetails,
   TransactionLogData,
+  InternalMarks,
 };

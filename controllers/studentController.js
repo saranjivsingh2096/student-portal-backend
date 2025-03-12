@@ -1,4 +1,10 @@
-const { User, StudentProfile, AttendanceData, FeeDetails } = require("../models");
+const {
+  User,
+  StudentProfile,
+  AttendanceData,
+  FeeDetails,
+  InternalMarks,
+} = require("../models");
 
 const getStudentProfile = async (req, res) => {
   const userKey = req.query.user;
@@ -19,7 +25,9 @@ const getStudentProfile = async (req, res) => {
     });
 
     if (!studentProfile) {
-      return res.status(404).json({ message: "Profile information not found." });
+      return res
+        .status(404)
+        .json({ message: "Profile information not found." });
     }
 
     const { id, UserId, ...filteredStudentProfile } = studentProfile.toJSON();
@@ -83,7 +91,7 @@ const getFeeDetails = async (req, res) => {
     const feeDetails = await FeeDetails.findAll({
       where: {
         paid: false,
-        UserId: user.id,
+        userId: user.id,
       },
     });
 
@@ -104,4 +112,44 @@ const getFeeDetails = async (req, res) => {
   }
 };
 
-module.exports = { getStudentProfile, getAttendanceData, getFeeDetails };
+const getInternalMarks = async (req, res) => {
+  const userKey = req.query.user;
+
+  if (!userKey) {
+    return res.status(400).json({ message: "User key is missing." });
+  }
+
+  try {
+    const user = await User.findOne({ where: { username: userKey } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const internalMarks = await InternalMarks.findAll({
+      where: { UserId: user.id },
+    });
+
+    if (!internalMarks || internalMarks.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No internal marks found for this user." });
+    }
+
+    const markDetails = internalMarks.map((mark) => mark.markDetails).flat();
+
+    return res.status(200).json({
+      markDetails,
+    });
+  } catch (error) {
+    console.error("Error fetching internal marks:", error);
+    return res.status(500).json({ error: "Failed to fetch internal marks." });
+  }
+};
+
+module.exports = {
+  getStudentProfile,
+  getAttendanceData,
+  getFeeDetails,
+  getInternalMarks,
+};
