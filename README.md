@@ -20,6 +20,7 @@
 |                         | GET        | `/validate-token`       | Validate JWT token                    |
 | **Student Information** | GET        | `/student-profile`      | Retrieve student profile details      |
 |                         | GET        | `/attendance-data`      | Fetch attendance records              |
+|                         | GET        | `/internal-marks`       | Fetch internal marks                  |
 | **Fee Management**      | GET        | `/fee-details`          | View unpaid fee details               |
 |                         | POST       | `/create-order`         | Generate Razorpay order for payment   |
 |                         | POST       | `/verify-payment`       | Verify and process payments           |
