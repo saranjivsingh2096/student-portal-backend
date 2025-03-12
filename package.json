@@ -31,8 +31,7 @@
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
     "razorpay": "^2.9.5",
-    "sequelize": "^6.37.5",
-    "sqlite3": "^5.1.7"
+    "sequelize": "^6.37.5"
   },
   "devDependencies": {
     "eslint": "^8.21.0",
