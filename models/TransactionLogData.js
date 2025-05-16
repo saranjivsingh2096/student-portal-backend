@@ -33,6 +33,17 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       timestamps: false,
+      indexes: [
+        {
+          name: 'transaction_user_idx',
+          fields: ['UserId']
+        },
+        {
+          name: 'transaction_id_idx',
+          fields: ['srmTransactionId'],
+          unique: true
+        }
+      ]
     }
   );
 

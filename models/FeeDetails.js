@@ -60,10 +60,21 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false,
+        index: true,
       },
     },
     {
       timestamps: false,
+      indexes: [
+        {
+          name: 'fee_user_paid_idx',
+          fields: ['UserId', 'paid']
+        },
+        {
+          name: 'fee_type_idx',
+          fields: ['feeType']
+        }
+      ]
     }
   );
 

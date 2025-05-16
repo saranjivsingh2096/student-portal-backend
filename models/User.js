@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+        index: true,
       },
       password: {
         type: DataTypes.STRING,
@@ -14,6 +15,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       timestamps: false,
+      indexes: [
+        {
+          name: 'username_idx',
+          unique: true,
+          fields: ['username']
+        }
+      ]
     }
   );
 

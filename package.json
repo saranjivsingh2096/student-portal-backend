@@ -6,6 +6,9 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "prod": "NODE_ENV=production ENABLE_CLUSTERING=true node app.js",
+    "prod:win": "set NODE_ENV=production& set ENABLE_CLUSTERING=true& node app.js",
+    "analyze": "node ./tools/analyze-performance.js",
     "postinstall": "npm list pg pg-hstore",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
@@ -23,6 +26,7 @@
   "dependencies": {
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
@@ -31,6 +35,7 @@
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
     "razorpay": "^2.9.5",
+    "redis": "^4.6.13",
     "sequelize": "^6.37.5"
   },
   "devDependencies": {
@@ -38,5 +43,8 @@
     "jest": "^27.4.5",
     "nodemon": "^2.0.20",
     "prettier": "^2.5.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
