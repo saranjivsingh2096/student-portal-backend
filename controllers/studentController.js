@@ -70,20 +70,15 @@ const getAttendanceData = async (req, res) => {
     const cachedData = await getCache(cacheKey);
     
     if (cachedData) {
+      console.log("Serving attendance data from cache for user:", userKey);
       return res.status(200).json(cachedData);
     }
     
     console.log("Fetching attendance data for user:", userKey);
     
-    // Use eager loading to fetch user and attendance data in one query
+    // Get the user directly first
     const user = await User.findOne({
-      where: { username: userKey },
-      include: [
-        {
-          model: AttendanceData,
-          required: false
-        }
-      ]
+      where: { username: userKey }
     });
 
     if (!user) {
@@ -91,26 +86,80 @@ const getAttendanceData = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    console.log("User found, attendance data:", user.AttendanceData ? "exists" : "missing");
+    console.log("Found user with ID:", user.id);
 
-    if (!user.AttendanceData) {
+    // Debug database structure for AttendanceData
+    const rawQuery = `
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'AttendanceData'
+    `;
+    const columnInfo = await sequelize.query(rawQuery, { type: sequelize.QueryTypes.SELECT });
+    console.log("AttendanceData table structure:", columnInfo);
+
+    // Check if attendance data exists separately
+    const attendanceData = await AttendanceData.findOne({
+      where: { UserId: user.id }
+    });
+
+    console.log("Attendance data found:", attendanceData ? "Yes" : "No");
+
+    if (!attendanceData) {
       return res.status(404).json({ message: "Attendance data not found." });
     }
 
-    // Check for necessary properties before accessing them
-    if (!user.AttendanceData.courseWiseAttendance || !user.AttendanceData.cumulativeAttendance) {
-      console.error("Missing attendance data properties:", user.AttendanceData);
-      return res.status(500).json({ message: "Attendance data is malformed." });
+    console.log("Raw attendance data:", JSON.stringify(attendanceData));
+
+    // Check data structure more thoroughly
+    const courseWiseAttendance = attendanceData.courseWiseAttendance || {};
+    const cumulativeAttendance = attendanceData.cumulativeAttendance || {};
+
+    console.log("Course wise attendance structure:", 
+      typeof courseWiseAttendance === 'object' ? 
+      (courseWiseAttendance.courseWiseAttendance ? "Has courseWiseAttendance property" : "Missing courseWiseAttendance property") : 
+      "Not an object");
+
+    console.log("Cumulative attendance structure:", 
+      typeof cumulativeAttendance === 'object' ? 
+      (cumulativeAttendance.cumulativeAttendance ? "Has cumulativeAttendance property" : "Missing cumulativeAttendance property") : 
+      "Not an object");
+
+    // Handle different data structures
+    let courseWiseData;
+    let cumulativeData;
+
+    // Try to get courseWiseAttendance with fallbacks
+    if (typeof courseWiseAttendance === 'object') {
+      if (courseWiseAttendance.courseWiseAttendance) {
+        courseWiseData = courseWiseAttendance.courseWiseAttendance;
+      } else if (Array.isArray(courseWiseAttendance)) {
+        courseWiseData = courseWiseAttendance;
+      } else {
+        courseWiseData = []; // Default empty array
+      }
+    } else {
+      courseWiseData = []; // Default empty array
+    }
+
+    // Try to get cumulativeAttendance with fallbacks
+    if (typeof cumulativeAttendance === 'object') {
+      if (cumulativeAttendance.cumulativeAttendance) {
+        cumulativeData = cumulativeAttendance.cumulativeAttendance;
+      } else {
+        cumulativeData = { percentage: "N/A" }; // Default structure
+      }
+    } else {
+      cumulativeData = { percentage: "N/A" }; // Default structure
     }
 
     const response = {
-      attendancePeriodStartDate: user.AttendanceData.attendancePeriodStartDate,
-      attendancePeriodEndDate: user.AttendanceData.attendancePeriodEndDate,
-      courseWiseAttendance:
-        user.AttendanceData.courseWiseAttendance.courseWiseAttendance || [],
-      cumulativeAttendance:
-        user.AttendanceData.cumulativeAttendance.cumulativeAttendance || {},
+      attendancePeriodStartDate: attendanceData.attendancePeriodStartDate,
+      attendancePeriodEndDate: attendanceData.attendancePeriodEndDate,
+      courseWiseAttendance: courseWiseData,
+      cumulativeAttendance: cumulativeData,
     };
+
+    console.log("Prepared attendance response:", JSON.stringify(response));
 
     // Store in cache before returning - attendance data rarely changes, so cache longer
     await setCache(cacheKey, response, 86400); // 24 hours TTL
@@ -118,7 +167,10 @@ const getAttendanceData = async (req, res) => {
     return res.status(200).json(response);
   } catch (error) {
     console.error("Error in getAttendanceData:", error);
-    return res.status(500).json({ error: "Failed to fetch attendance data." });
+    return res.status(500).json({ 
+      error: "Failed to fetch attendance data.",
+      details: error.message 
+    });
   }
 };
 
@@ -295,23 +347,30 @@ const getDashboardData = async (req, res) => {
     const cachedData = await getCache(cacheKey);
     
     if (cachedData) {
+      console.log("Serving dashboard data from cache for user:", userKey);
       return res.status(200).json(cachedData);
     }
 
     console.log("Fetching dashboard data for user:", userKey);
     
-    // Get user with all related data in a single query
+    // First get the user
     const user = await User.findOne({
       where: { username: userKey },
       include: [
-        { model: StudentProfile, required: false },
-        { model: AttendanceData, required: false }
+        { model: StudentProfile, required: false }
       ]
     });
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
+
+    // Fetch attendance data separately for better error handling
+    const attendanceData = await AttendanceData.findOne({
+      where: { UserId: user.id }
+    });
+
+    console.log("Dashboard - attendance data found:", attendanceData ? "Yes" : "No");
 
     // Prepare basic user data
     const dashboardData = {
@@ -323,10 +382,29 @@ const getDashboardData = async (req, res) => {
         semester: user.StudentProfile.semester,
         section: user.StudentProfile.section
       } : null,
-      attendance: user.AttendanceData ? {
-        cumulativePercentage: user.AttendanceData.cumulativeAttendance?.cumulativeAttendance?.percentage || "N/A"
-      } : null
+      attendance: null
     };
+
+    // Handle attendance data with careful property checking
+    if (attendanceData) {
+      let percentage = "N/A";
+      
+      // Try to get attendance percentage with fallbacks
+      if (attendanceData.cumulativeAttendance) {
+        const cumulative = attendanceData.cumulativeAttendance;
+        if (typeof cumulative === 'object') {
+          if (cumulative.cumulativeAttendance && cumulative.cumulativeAttendance.percentage) {
+            percentage = cumulative.cumulativeAttendance.percentage;
+          } else if (cumulative.percentage) {
+            percentage = cumulative.percentage;
+          }
+        }
+      }
+      
+      dashboardData.attendance = {
+        cumulativePercentage: percentage
+      };
+    }
 
     // Get fee summary
     const feeDetails = await FeeDetails.findAll({
@@ -348,13 +426,18 @@ const getDashboardData = async (req, res) => {
       availableAssessments: marksCount
     };
 
+    console.log("Prepared dashboard data:", JSON.stringify(dashboardData));
+
     // Store dashboard data in cache (short TTL since it aggregates multiple data sources)
     await setCache(cacheKey, dashboardData, 1800); // 30 minutes TTL
     
     return res.status(200).json(dashboardData);
   } catch (error) {
     console.error("Error in getDashboardData:", error);
-    return res.status(500).json({ error: "Failed to fetch dashboard data." });
+    return res.status(500).json({ 
+      error: "Failed to fetch dashboard data.",
+      details: error.message 
+    });
   }
 };
 
