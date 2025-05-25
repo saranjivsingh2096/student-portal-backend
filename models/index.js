@@ -69,17 +69,20 @@ const InternalMarks = require("./InternalMarks")(
   sequelize,
   Sequelize.DataTypes
 );
+const GradeDetails = require("./GradeDetails")(sequelize, Sequelize.DataTypes);
 
 User.hasOne(AttendanceData);
 User.hasOne(StudentProfile);
 User.hasMany(FeeDetails);
 User.hasMany(TransactionLogData);
 User.hasMany(InternalMarks);
+User.hasOne(GradeDetails);
 AttendanceData.belongsTo(User);
 StudentProfile.belongsTo(User);
 FeeDetails.belongsTo(User);
 TransactionLogData.belongsTo(User);
 InternalMarks.belongsTo(User);
+GradeDetails.belongsTo(User);
 
 sequelize
   .sync()
@@ -98,4 +101,5 @@ module.exports = {
   FeeDetails,
   TransactionLogData,
   InternalMarks,
+  GradeDetails,
 };

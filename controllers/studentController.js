@@ -4,6 +4,7 @@ const {
   AttendanceData,
   FeeDetails,
   InternalMarks,
+  GradeDetails,
   sequelize
 } = require("../models");
 const { getCache, setCache } = require("../utils/cache");
@@ -333,6 +334,39 @@ const getInternalMarks = async (req, res) => {
   }
 };
 
+// Get grade details for a specific user
+const getGradeDetails = async (req, res) => {
+  const userKey = req.query.user;
+
+  if (!userKey) {
+    return res.status(400).json({ message: "User key is missing." });
+  }
+
+  try {
+    const user = await User.findOne({ where: { username: userKey } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Assuming GradeDetails model is correctly associated with User model
+    // and has a UserId foreign key
+    const gradeDetailsData = await GradeDetails.findOne({
+      where: { UserId: user.id }
+    });
+
+    if (!gradeDetailsData) {
+      return res.status(404).json({ message: "Grade details not found for this user." });
+    }
+
+    // Return the actual gradeDetails JSONB content
+    return res.status(200).json(gradeDetailsData.gradeDetails);
+  } catch (error) {
+    console.error('Error fetching grade details:', error);
+    return res.status(500).json({ error: "Failed to fetch grade details." });
+  }
+};
+
 // New method to fetch all student data in one request for dashboard
 const getDashboardData = async (req, res) => {
   const userKey = req.query.user;
@@ -446,5 +480,6 @@ module.exports = {
   getAttendanceData,
   getFeeDetails,
   getInternalMarks,
+  getGradeDetails,
   getDashboardData
 };

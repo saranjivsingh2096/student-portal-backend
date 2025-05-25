@@ -28,7 +28,9 @@ module.exports = (sequelize, DataTypes) => {
   User.associate = (models) => {
     User.hasOne(models.AttendanceData);
     User.hasOne(models.StudentProfile);
-    User.hasOne(models.StudentDetails);
+    User.hasOne(models.FeeDetails);
+    User.hasOne(models.InternalMarks);
+    User.hasOne(models.GradeDetails);
   };
 
   return User;
