@@ -7,6 +7,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const cluster = require('cluster');
 const os = require('os');
+const { User } = require("./models"); 
 
 require("dotenv").config();
 
@@ -97,6 +98,23 @@ if (enableClustering && cluster.isMaster) {
   authRoutes(app);
   studentRoutes(app);
   transactionRoutes(app);
+
+  // Dummy route to query the database and keep it active
+  app.get("/db-activity-check", async (req, res) => {
+    try {
+      const users = await User.findAll({ limit: 5, attributes: ['id', 'username'] }); // Fetch up to 5 users, only id and username
+
+      if (!users || users.length === 0) {
+        return res.json({ success: true, message: "Database connection successful, no users found or users table is empty.", data: [] });
+      }
+
+      return res.json({ success: true, message: "Database query successful.", data: users });
+    } catch (error) {
+      console.error("Error during database activity check:", error);
+      const message = error.message || "An error occurred while querying the database.";
+      return res.status(500).json({ success: false, error: message });
+    }
+  });
 
   // Error handling middleware
   app.use((err, req, res, next) => {
