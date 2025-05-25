@@ -144,20 +144,18 @@ const getTransactionLog = async (req, res) => {
     return res.status(400).json({ message: "User key is missing." });
   }
 
-  // Pagination parameters
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const offset = (page - 1) * limit;
 
   try {
-    // Try to get data from cache first
     const cacheKey = `transaction-log:${userKey}:page${page}:limit${limit}`;
-    const cachedData = await getCache(cacheKey);
-    
+    let cachedData = null;
+   
     if (cachedData) {
       return res.status(200).json(cachedData);
     }
-
+  
     const user = await User.findOne({
       where: { username: userKey }
     });
