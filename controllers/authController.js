@@ -24,8 +24,16 @@ const logout = (req, res) => {
   return res.status(200).json({ message: "Logged out successfully." });
 };
 
-const validateToken = (req, res) => {
-  return res.status(200).json({ message: "Token is valid.", user: req.user });
+const validateToken = (req, res) => {  
+  return res.status(200).json({ 
+    success: true, 
+    message: "Token is valid.", 
+    user: {
+      id: req.user.id, // Or whatever primary identifier you have
+      username: req.user.username // Or other essential, non-sensitive identifiers
+      // Avoid sending back sensitive information like password hashes here
+    }
+  });
 };
 
 module.exports = { login, logout, validateToken };

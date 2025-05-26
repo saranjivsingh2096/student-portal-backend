@@ -99,18 +99,18 @@ if (enableClustering && cluster.isMaster) {
   studentRoutes(app);
   transactionRoutes(app);
 
-  // Dummy route to query the database and keep it active
+  // Dummy route to query the database and keep it active, now returns user count
   app.get("/db-activity-check", async (req, res) => {
     try {
-      const users = await User.findAll({ limit: 5, attributes: ['id', 'username'] }); // Fetch up to 5 users, only id and username
+      const userCount = await User.count();
 
-      if (!users || users.length === 0) {
-        return res.json({ success: true, message: "Database connection successful, no users found or users table is empty.", data: [] });
-      }
-
-      return res.json({ success: true, message: "Database query successful.", data: users });
+      return res.json({ 
+        success: true, 
+        message: "Database query successful.", 
+        data: { totalUsers: userCount } 
+      });
     } catch (error) {
-      console.error("Error during database activity check:", error);
+      console.error("Error during database activity check (counting users):", error);
       const message = error.message || "An error occurred while querying the database.";
       return res.status(500).json({ success: false, error: message });
     }

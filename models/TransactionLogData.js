@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       transactionDate: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
         allowNull: false,
       },
       paymentGateway: {
@@ -32,7 +32,9 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-      timestamps: false,
+      timestamps: true,
+      updatedAt: 'transactionUpdatedAt',
+      createdAt: 'transactionCreatedAt',
       indexes: [
         {
           name: 'transaction_user_idx',
@@ -42,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
           name: 'transaction_id_idx',
           fields: ['srmTransactionId'],
           unique: true
+        },
+        {
+          name: 'transaction_date_idx',
+          fields: ['transactionDate']
         }
       ]
     }

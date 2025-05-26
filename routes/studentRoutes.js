@@ -8,9 +8,9 @@ const {
 const authenticateToken = require("../middlewares/authenticateToken");
 
 module.exports = (app) => {
-  app.get("/student-profile", authenticateToken, getStudentProfile);
-  app.get("/attendance-data", authenticateToken, getAttendanceData);
-  app.get("/fee-details", authenticateToken, getFeeDetails);
-  app.get("/internal-marks", authenticateToken, getInternalMarks);
-  app.get("/grade-details", authenticateToken, getGradeDetails);
+  app.get("/student/profile", authenticateToken, getStudentProfile);
+  app.get("/student/attendance-data", authenticateToken, getAttendanceData);
+  app.get("/student/fee-details", authenticateToken, getFeeDetails);
+  app.get("/student/internal-marks", authenticateToken, getInternalMarks);
+  app.get("/student/grade-details", authenticateToken, getGradeDetails);
 };

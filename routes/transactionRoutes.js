@@ -2,7 +2,7 @@ const { createPaymentOrder, verifyPayment, getTransactionLog } = require("../con
 const authenticateToken = require("../middlewares/authenticateToken");
 
 module.exports = (app) => {
-  app.post("/create-order", authenticateToken, createPaymentOrder);
-  app.post("/verify-payment", authenticateToken, verifyPayment);
-  app.get("/transaction-log-data", authenticateToken, getTransactionLog);
+  app.post("/payment/create-order", authenticateToken, createPaymentOrder);
+  app.post("/payment/verify-payment", authenticateToken, verifyPayment);
+  app.get("/payment/transaction-log-data", authenticateToken, getTransactionLog);
 };
